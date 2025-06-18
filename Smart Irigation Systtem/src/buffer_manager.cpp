@@ -45,15 +45,3 @@ void BufferManager::flushToServer(bool(*sendFn)(const String&)) {
     SPIFFS.remove("/buffer.json");
 }
 bool BufferManager::hasSpace() { return countLines() < MAX_BUFFER_LINES; }
-void BufferManager::backupBuffer() {
-    File file = SPIFFS.open("/buffer.json", FILE_READ);
-    File backup = SPIFFS.open("/buffer.bak", FILE_WRITE);
-    while (file && file.available()) backup.println(file.readStringUntil('\n'));
-    file.close(); backup.close();
-}
-void BufferManager::restoreBuffer() {
-    File file = SPIFFS.open("/buffer.bak", FILE_READ);
-    File mainf = SPIFFS.open("/buffer.json", FILE_WRITE);
-    while (file && file.available()) mainf.println(file.readStringUntil('\n'));
-    file.close(); mainf.close();
-}

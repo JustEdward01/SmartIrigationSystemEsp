@@ -9,6 +9,4 @@ public:
     int countLines();
     void enforceLimit();
     bool hasSpace();
-    void backupBuffer();
-    void restoreBuffer();
 };
