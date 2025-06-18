@@ -35,14 +35,32 @@ void BufferManager::save(const String& payload) {
     if (file) { file.println(payload); file.close(); }
 }
 void BufferManager::flushToServer(bool(*sendFn)(const String&)) {
-    File file = SPIFFS.open("/buffer.json", FILE_READ);
-    if (!file || file.size() == 0) return;
-    while (file.available()) {
-        String line = file.readStringUntil('\n');
-        if (!sendFn(line)) { file.close(); return; }
+    File in = SPIFFS.open("/buffer.json", FILE_READ);
+    if (!in || in.size() == 0) {
+        if (in) in.close();
+        return;
     }
-    file.close();
+
+    File tmp = SPIFFS.open("/buffer.tmp", FILE_WRITE);
+    if (!tmp) {
+        in.close();
+        return;
+    }
+
+    bool keepRest = false;
+    while (in.available()) {
+        String line = in.readStringUntil('\n');
+        if (keepRest || !sendFn(line)) {
+            keepRest = true;
+            tmp.println(line);
+        }
+    }
+
+    in.close();
+    tmp.close();
+
     SPIFFS.remove("/buffer.json");
+    SPIFFS.rename("/buffer.tmp", "/buffer.json");
 }
 bool BufferManager::hasSpace() { return countLines() < MAX_BUFFER_LINES; }
 void BufferManager::backupBuffer() {
