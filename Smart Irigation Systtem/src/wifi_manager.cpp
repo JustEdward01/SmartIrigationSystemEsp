@@ -4,12 +4,17 @@
 #include <ArduinoJson.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <ctype.h>
 #include "config.h"
 
 WiFiManagerESP::WiFiManagerESP() : server(80), apMode(false) {}
 bool WiFiManagerESP::validateInput(const String& s, const String& p) {
     if (s.length() < 2 || s.length() > 32) return false;
-    for (char c : s) if (!isalnum(c) && c != '-' && c != '_' && c != '.') return false;
+    for (size_t i = 0; i < s.length(); i++) {
+        char c = s[i];
+        if (!isalnum(c) && c != '-' && c != '_' && c != '.')
+            return false;
+    }
     if (p.length() < 4 || p.length() > 63) return false;
     return true;
 }
